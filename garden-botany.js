@@ -510,13 +510,13 @@ function drawBotanicalLeaf(ctx, x, y, angle, length, width, type = 'roseLeaf') {
 
   const grad = ctx.createLinearGradient(0, -width * 0.6, length, width * 0.6);
   if (type === 'eucalyptus') {
-    grad.addColorStop(0, '#4E6E5D');
-    grad.addColorStop(0.5, '#6E8F7D');
-    grad.addColorStop(1, '#94B3A2');
+    grad.addColorStop(0, '#6e8e7d');
+    grad.addColorStop(0.5, '#8ead9d');
+    grad.addColorStop(1, '#b4d3c2');
   } else {
-    grad.addColorStop(0, '#2E4F38');
-    grad.addColorStop(0.55, '#466D4F');
-    grad.addColorStop(1, '#688F6E');
+    grad.addColorStop(0, '#4a7a58');
+    grad.addColorStop(0.55, '#6a9a78');
+    grad.addColorStop(1, '#8ab898');
   }
   ctx.fillStyle = grad;
   ctx.fill();
