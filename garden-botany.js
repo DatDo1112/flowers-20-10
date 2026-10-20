@@ -626,9 +626,9 @@ function createBellflowerSprite(config) {
   const cx = logicalSize / 2;
   const cy = logicalSize / 2;
   const blue = color === 'blue';
-  const petalOuter = blue ? '#7aa6e8' : '#f4a6c2';
-  const petalInner = blue ? '#4f7fd0' : '#de7aa0';
-  const petalDeep = blue ? '#2f5fa8' : '#b84a7a';
+  const petalOuter = blue ? '#7aa6e8' : '#ff9ec7';
+  const petalInner = blue ? '#4f7fd0' : '#f06292';
+  const petalDeep = blue ? '#2f5fa8' : '#d81b60';
   for (let i = 0; i < 5; i++) {
     ctx.save();
     ctx.translate(cx, cy);
@@ -688,8 +688,8 @@ function createHydrangeaSprite(config) {
   const cy = logicalSize / 2;
   const rand = createSeededRandom(seed);
   const blue = color === 'blue';
-  const c1 = blue ? '#8fb7ea' : '#f5b3cb';
-  const c2 = blue ? '#5f8fd4' : '#e07a9f';
+  const c1 = blue ? '#8fb7ea' : '#ffb3d9';
+  const c2 = blue ? '#5f8fd4' : '#f06292';
   const count = 16;
   for (let i = 0; i < count; i++) {
     const angle = (i / count) * Math.PI * 2 + rand() * 0.4;
