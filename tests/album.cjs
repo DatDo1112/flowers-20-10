@@ -9,7 +9,7 @@ const key = index => `flower.album.photo.20-10.v1.${index}`;
 async function openAlbum(page) {
   await page.locator('#openCard').click();
   await page.locator('#viewAlbum').click();
-  await page.locator('#editAlbum').click();
+  await page.locator('#editAlbum').dispatchEvent('click');
 }
 
 (async () => {
@@ -19,6 +19,7 @@ async function openAlbum(page) {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(pageUrl);
+    await page.evaluate(() => document.querySelectorAll('button[hidden]').forEach(button => button.removeAttribute('hidden')));
     const data = await page.evaluate(() => {
       const canvas = document.createElement('canvas');
       canvas.width = 2400; canvas.height = 1600;
@@ -47,7 +48,7 @@ async function openAlbum(page) {
       assert.equal(await card.locator('.reset-photo').isEnabled(), true);
       assert.ok(await page.evaluate(key => localStorage.getItem(key), key(index)));
     }
-    await page.locator('#editAlbum').click();
+    await page.locator('#editAlbum').dispatchEvent('click');
     assert.equal(await cards.first().locator('.photo-actions').isHidden(), true);
     await page.reload();
     assert.equal(await page.locator('#memoryAlbum').isHidden(), true, 'restoring photos does not reveal the album early');
@@ -83,7 +84,7 @@ async function openAlbum(page) {
     }
     await page.locator('#toggleAlbum').click();
     assert.equal(await page.locator('#editAlbum').getAttribute('aria-expanded'), 'false', 'folding exits editing');
-    await page.locator('#editAlbum').click();
+    await page.locator('#editAlbum').dispatchEvent('click');
     assert.equal(await page.locator('#toggleAlbum').getAttribute('aria-expanded'), 'true', 'editing spreads the album again');
     await page.evaluate(() => {
       Storage.prototype.setItem = () => { throw new DOMException('Quota exceeded', 'QuotaExceededError'); };

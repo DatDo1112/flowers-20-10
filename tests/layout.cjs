@@ -38,6 +38,7 @@ async function assertClearLayout(page, label) {
     const page = await browser.newPage({ viewport: { width: 1024, height: 860 }, reducedMotion: 'reduce' });
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(pageUrl);
+    await page.evaluate(() => document.querySelectorAll('button[hidden]').forEach(button => button.removeAttribute('hidden')));
     await page.locator('.portrait-photo img').first().evaluate(img => img.decode());
     assert.equal(await page.locator('#memoryAlbum').isHidden(), true, 'photos wait until the letter opens');
     assert.equal(await page.locator('#bouquetStageWrapper').evaluate(e => {

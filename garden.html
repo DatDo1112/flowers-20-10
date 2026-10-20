@@ -239,7 +239,7 @@
       const ease = n => 1 - Math.pow(1 - clamp(n), 3);
       let seed = 2010;
       const random = () => { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; };
-      const { createRealisticRoseSprite, createRoseBudSprite, drawBotanicalLeaf } = window.GardenBotany;
+      const { createBellflowerSprite, createHydrangeaSprite, drawBotanicalLeaf } = window.GardenBotany;
       const paletteKeys = ['sweetBlush', 'pastelPink', 'creamPeach', 'pearlVintage', 'berryRomance', 'paleGreen', 'skyBlue', 'pearlWhite'];
       // Bake the soft focus and bloom into the sprites once, keeping the live scene light.
       function softenPetals(source, logicalSize, radius) {
@@ -268,15 +268,17 @@
         rose.whorlCanvases.forEach(layer => c.drawImage(layer, 0, 0));
         return { ...rose, openCanvas };
       }
-      const sprites = paletteKeys.flatMap((paletteKey, i) => ['garden', 'classic', 'peony'].map((variety, j) => prepareRose({
-        radius: 46, paletteKey, variety, seed: 2010 + i * 107 + j * 41,
-        tiltX: (j - 1) * .65, tiltY: -.2 + (i % 5) * .08, hasDewdrop: j === 0
-      })));
-      const heroSprite = prepareRose({ radius: 86, paletteKey: 'sweetBlush', variety: 'garden', tiltX: -.22, tiltY: -.3, seed: 2010, hasDewdrop: true });
-      const budSprites = paletteKeys.map(paletteKey => {
-        const bud = createRoseBudSprite({ paletteKey });
-        return { ...bud, canvas: softenPetals(bud.canvas, bud.logicalSize, bud.radius) };
-      });
+      function prepareSprite(sprite) {
+        return { ...sprite, canvas: softenPetals(sprite.canvas, sprite.logicalSize, sprite.radius) };
+      }
+      const sprites = [
+        prepareSprite(createBellflowerSprite({ radius: 46, color: 'blue', seed: 1 })),
+        prepareSprite(createBellflowerSprite({ radius: 46, color: 'pink', seed: 2 })),
+        prepareSprite(createHydrangeaSprite({ radius: 46, color: 'blue', seed: 3 })),
+        prepareSprite(createHydrangeaSprite({ radius: 46, color: 'pink', seed: 4 }))
+      ];
+      const heroSprite = prepareSprite(createBellflowerSprite({ radius: 86, color: 'pink', seed: 5 }));
+      const budSprite = prepareSprite(createBellflowerSprite({ radius: 34, color: 'blue', seed: 6 }));
       const leafCanvas = document.createElement('canvas');
       leafCanvas.width = 300; leafCanvas.height = 200;
       const leafContext = leafCanvas.getContext('2d');
@@ -339,7 +341,7 @@
           depth: row, radius: 13 + row * 2.5 + random() * 4,
           stem: .2 + random() * .15, bend: (random() - .5) * 45,
           phase: random() * TAU, rotation: (random() - .5) * .5,
-          bud: true, sprite: i * 3 % budSprites.length,
+          bud: true, sprite: 0,
           delay: .6 + random() * 2.4 + row * .4,
           alpha: .75 + row * .06, tilt: 1,
           offsetX: 0, offsetY: 0, hover: 0
@@ -408,29 +410,13 @@
         ctx.rotate(f.rotation + wind * .095 + f.offsetX * .003);
         const breath = motion.matches ? 1 : 1 + Math.sin(time * .0014 + f.phase) * .008;
         ctx.scale(breath * (1 + f.hover * .04), f.tilt * breath * (1 + f.hover * .04));
-        if (f.bud) {
-          const bud = budSprites[f.sprite];
-          const size = bud.logicalSize * r / bud.radius;
-          ctx.scale(.4 + p * .6, .4 + p * .6);
-          ctx.drawImage(bud.canvas, -size / 2, -size / 2, size, size);
-          ctx.restore();
-          return;
-        }
-        const rose = isHero ? heroSprite : sprites[f.sprite];
-        const size = rose.logicalSize * r / rose.radius;
-        if (growth >= 1) {
-          ctx.drawImage(rose.openCanvas, -size / 2, -size / 2, size, size);
-        } else {
-          ctx.save(); ctx.scale(.5 + p * .5, .5 + p * .5);
-          ctx.drawImage(rose.baseCanvas, -size / 2, -size / 2, size, size); ctx.restore();
-          rose.whorlCanvases.forEach((layer, i) => {
-            const open = ease((growth - whorlDelays[i]) / (1 - whorlDelays[i]));
-            const unfurl = closedScales[i] + (1 - closedScales[i]) * open;
-            ctx.save(); ctx.rotate((1 - open) * twistAngles[i]);
-            ctx.scale(unfurl, unfurl * (.78 + open * .22));
-            ctx.drawImage(layer, -size / 2, -size / 2, size, size); ctx.restore();
-          });
-        }
+        const sprite = isHero ? heroSprite : (f.bud ? budSprite : sprites[f.sprite]);
+        const size = sprite.logicalSize * r / sprite.radius;
+        const bloomScale = Math.max(0.35, Math.min(1.35, growth >= 1 ? 1 : p));
+        const drawSize = size * bloomScale;
+        ctx.globalAlpha = isHero ? 1 : Math.min(1, f.alpha) * clamp(growth * 3);
+        ctx.drawImage(sprite.canvas, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        ctx.globalAlpha = 1;
         ctx.restore();
       }
 

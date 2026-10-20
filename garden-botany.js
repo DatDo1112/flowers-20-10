@@ -611,5 +611,122 @@ function createRoseBudSprite({ radius = 28, paletteKey = 'sweetBlush' } = {}) {
   return { canvas, logicalSize, radius };
 }
 
-window.GardenBotany = Object.freeze({ createRealisticRoseSprite, createRoseBudSprite, drawBotanicalLeaf });
+/**
+ * Bellflower sprite for garden.
+ */
+function createBellflowerSprite(config) {
+  const { radius = 46, color = 'blue', seed = 1 } = config;
+  const dpr = Math.min(window.devicePixelRatio || 2, 2.2);
+  const logicalSize = radius * 2.8;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(logicalSize * dpr);
+  canvas.height = Math.ceil(logicalSize * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = logicalSize / 2;
+  const cy = logicalSize / 2;
+  const blue = color === 'blue';
+  const petalOuter = blue ? '#7aa6e8' : '#f4a6c2';
+  const petalInner = blue ? '#4f7fd0' : '#de7aa0';
+  const petalDeep = blue ? '#2f5fa8' : '#b84a7a';
+  for (let i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((i / 5) * Math.PI * 2);
+    const grad = ctx.createLinearGradient(0, -radius, 0, radius * 0.2);
+    grad.addColorStop(0, petalOuter);
+    grad.addColorStop(0.6, petalInner);
+    grad.addColorStop(1, petalDeep);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, radius * 0.12);
+    ctx.bezierCurveTo(-radius * 0.28, -radius * 0.05, -radius * 0.38, -radius * 0.62, -radius * 0.14, -radius * 0.92);
+    ctx.bezierCurveTo(-radius * 0.06, -radius * 0.98, radius * 0.06, -radius * 0.98, radius * 0.14, -radius * 0.92);
+    ctx.bezierCurveTo(radius * 0.38, -radius * 0.62, radius * 0.28, -radius * 0.05, 0, radius * 0.12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.16, 0, Math.PI * 2);
+  ctx.fillStyle = blue ? '#f6e7a1' : '#fff0f5';
+  ctx.fill();
+  ctx.save();
+  ctx.translate(cx, cy + radius * 0.1);
+  for (let i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.rotate((i / 5) * Math.PI * 2);
+    ctx.fillStyle = '#5b7f5a';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-radius * 0.1, radius * 0.22);
+    ctx.lineTo(radius * 0.1, radius * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  return { canvas, logicalSize, radius };
+}
+
+/**
+ * Hydrangea/lam tinh cluster sprite for garden.
+ */
+function createHydrangeaSprite(config) {
+  const { radius = 46, color = 'pink', seed = 1 } = config;
+  const dpr = Math.min(window.devicePixelRatio || 2, 2.2);
+  const logicalSize = radius * 2.8;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(logicalSize * dpr);
+  canvas.height = Math.ceil(logicalSize * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = logicalSize / 2;
+  const cy = logicalSize / 2;
+  const rand = createSeededRandom(seed);
+  const blue = color === 'blue';
+  const c1 = blue ? '#8fb7ea' : '#f5b3cb';
+  const c2 = blue ? '#5f8fd4' : '#e07a9f';
+  const count = 16;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + rand() * 0.4;
+    const r = radius * (0.3 + rand() * 0.45);
+    const fx = cx + Math.cos(angle) * r;
+    const fy = cy + Math.sin(angle) * r;
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.rotate(rand() * Math.PI * 2);
+    const size = radius * 0.24 * (0.8 + rand() * 0.4);
+    for (let p = 0; p < 4; p++) {
+      ctx.save();
+      ctx.rotate((p / 4) * Math.PI * 2);
+      const grad = ctx.createRadialGradient(0, 0, 0, size * 0.4, 0, size);
+      grad.addColorStop(0, c1);
+      grad.addColorStop(1, c2);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(size * 0.35, 0, size * 0.5, size * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
+    ctx.fillStyle = blue ? '#f6e7a1' : '#fff0f5';
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#6b8f6a';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + radius * 0.4, radius * 0.55, radius * 0.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  return { canvas, logicalSize, radius };
+}
+
+window.GardenBotany = Object.freeze({ createRealisticRoseSprite, createRoseBudSprite, drawBotanicalLeaf, createBellflowerSprite, createHydrangeaSprite });
 })();

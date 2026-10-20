@@ -963,6 +963,127 @@ function drawWrappingPaperFrontAndRibbon(ctx, cx, cy, scale, time) {
   ctx.restore(); // end scale/translate
 }
 
+/**
+ * Simple bellflower sprite (blue/pink) used to replace roses.
+ */
+function createBellflowerSprite(config) {
+  const { radius = 48, color = 'blue', seed = 1 } = config;
+  const dpr = Math.min(window.devicePixelRatio || 2, 2.2);
+  const logicalSize = radius * 2.8;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(logicalSize * dpr);
+  canvas.height = Math.ceil(logicalSize * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = logicalSize / 2;
+  const cy = logicalSize / 2;
+  const blue = color === 'blue';
+  const petalOuter = blue ? '#7aa6e8' : '#f4a6c2';
+  const petalInner = blue ? '#4f7fd0' : '#de7aa0';
+  const petalDeep = blue ? '#2f5fa8' : '#b84a7a';
+  // petals
+  for (let i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((i / 5) * Math.PI * 2);
+    const grad = ctx.createLinearGradient(0, -radius, 0, radius * 0.2);
+    grad.addColorStop(0, petalOuter);
+    grad.addColorStop(0.6, petalInner);
+    grad.addColorStop(1, petalDeep);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, radius * 0.12);
+    ctx.bezierCurveTo(-radius * 0.28, -radius * 0.05, -radius * 0.38, -radius * 0.62, -radius * 0.14, -radius * 0.92);
+    ctx.bezierCurveTo(-radius * 0.06, -radius * 0.98, radius * 0.06, -radius * 0.98, radius * 0.14, -radius * 0.92);
+    ctx.bezierCurveTo(radius * 0.38, -radius * 0.62, radius * 0.28, -radius * 0.05, 0, radius * 0.12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+  // center
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.16, 0, Math.PI * 2);
+  ctx.fillStyle = blue ? '#f6e7a1' : '#fff0f5';
+  ctx.fill();
+  // calyx
+  ctx.save();
+  ctx.translate(cx, cy + radius * 0.1);
+  for (let i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.rotate((i / 5) * Math.PI * 2);
+    ctx.fillStyle = '#5b7f5a';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-radius * 0.1, radius * 0.22);
+    ctx.lineTo(radius * 0.1, radius * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  return { canvas, logicalSize, radius };
+}
+
+/**
+ * Simple hydrangea/lam tinh cluster sprite (pink/blue).
+ */
+function createHydrangeaSprite(config) {
+  const { radius = 48, color = 'pink', seed = 1 } = config;
+  const dpr = Math.min(window.devicePixelRatio || 2, 2.2);
+  const logicalSize = radius * 2.8;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(logicalSize * dpr);
+  canvas.height = Math.ceil(logicalSize * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = logicalSize / 2;
+  const cy = logicalSize / 2;
+  const rand = createSeededRandom(seed);
+  const blue = color === 'blue';
+  const c1 = blue ? '#8fb7ea' : '#f5b3cb';
+  const c2 = blue ? '#5f8fd4' : '#e07a9f';
+  const count = 16;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + rand() * 0.4;
+    const r = radius * (0.3 + rand() * 0.45);
+    const fx = cx + Math.cos(angle) * r;
+    const fy = cy + Math.sin(angle) * r;
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.rotate(rand() * Math.PI * 2);
+    const size = radius * 0.24 * (0.8 + rand() * 0.4);
+    for (let p = 0; p < 4; p++) {
+      ctx.save();
+      ctx.rotate((p / 4) * Math.PI * 2);
+      const grad = ctx.createRadialGradient(0, 0, 0, size * 0.4, 0, size);
+      grad.addColorStop(0, c1);
+      grad.addColorStop(1, c2);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(size * 0.35, 0, size * 0.5, size * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
+    ctx.fillStyle = blue ? '#f6e7a1' : '#fff0f5';
+    ctx.fill();
+    ctx.restore();
+  }
+  // soft leaf base
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#6b8f6a';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + radius * 0.4, radius * 0.55, radius * 0.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  return { canvas, logicalSize, radius };
+}
+
 // Define the complete arrangement of 25 roses (back layer, mid dome, hero front blooms, and outer buds)
 const BOUQUET_LAYOUT = [
   // TIER 1: Upper & Outer Halo Rosebuds & Arching Blooms (Back Depth)
@@ -1094,10 +1215,15 @@ function settleBouquet() {
 
 function initBotanicalAssets() {
   BOUQUET_LAYOUT.forEach((item, index) => {
-    const sprite = createRealisticRoseSprite({ ...item, radius: item.r });
+    const type = index % 2 === 0 ? 'bellflower' : 'hydrangea';
+    const color = (index % 3 === 0) ? 'blue' : 'pink';
+    const sprite = type === 'bellflower'
+      ? createBellflowerSprite({ radius: item.r, color, seed: item.seed || index + 1 })
+      : createHydrangeaSprite({ radius: item.r, color, seed: item.seed || index + 1 });
     roseNodes.push({
       ...item,
       index,
+      type,
       sprite,
       offsetX: 0,
       offsetY: 0,
@@ -1105,7 +1231,7 @@ function initBotanicalAssets() {
       vy: 0,
       scaleOffset: 1,
       vScale: 0,
-      // Multi-layer unfurling bloom state: 0.05 = tight furled bud, 1.0 = full rose, 1.32 = dramatic wide over-bloom
+      // bloom state: 0.05 = bud, 1.0 = open, 1.32 = over-bloom
       bloom: 0.05,
       targetBloom: 1.04,
       vBloom: 0,
@@ -1452,55 +1578,18 @@ function renderBouquetScene(timestamp) {
     bCtx.translate(rx, ry);
     bCtx.rotate(baseSwayRot);
 
-    // 4A. Draw Base Shadow & Green Sepals
+    // 4A. Draw flower sprite with bloom scale
+    const bloomScale = Math.max(0.35, Math.min(1.35, rose.bloom));
+    const flowerSize = drawSize * bloomScale;
+    bCtx.globalAlpha = Math.min(1, rose.bloom * 2.2);
     bCtx.drawImage(
-      rose.sprite.baseCanvas,
-      -drawSize * 0.5,
-      -drawSize * 0.5,
-      drawSize,
-      drawSize
+      rose.sprite.canvas,
+      -flowerSize * 0.5,
+      -flowerSize * 0.5,
+      flowerSize,
+      flowerSize
     );
-
-    // 4B. Draw each of the 4 Concentric Petal Whorls with staggered unfurling & spiral rotation!
-    // whorlIdx 0 = Outer Guard Petals, 1 = Mid-Outer, 2 = Inner Velvet, 3 = Center Spiral Core
-    const whorlDelays = [0.0, 0.12, 0.24, 0.34];
-    const closedScales = [0.44, 0.36, 0.28, 0.38];
-    const overBloomBoost = [0.32, 0.24, 0.16, 0.10];
-    const twistAngles = [0.52, -0.78, 1.05, -1.35];
-
-    for (let wIdx = 0; wIdx < 4; wIdx++) {
-      const wCanvas = rose.sprite.whorlCanvases[wIdx];
-      // Calculate staggered unfurling progress for this specific petal whorl
-      const rawOpen = (rose.bloom - whorlDelays[wIdx]) / (1 - whorlDelays[wIdx]);
-      const clampedOpen = Math.max(0, Math.min(1, rawOpen));
-      const overOpen = Math.max(0, rose.bloom - 1.0);
-
-      // Smooth cubic ease-out for bud-to-rose opening + extra expansion when over-blooming
-      const easeOpen = 1 - Math.pow(1 - clampedOpen, 3);
-      const whorlScale = closedScales[wIdx]
-        + (1.0 - closedScales[wIdx]) * easeOpen
-        + overOpen * overBloomBoost[wIdx];
-
-      // Spiral unfurling rotation: tightly twisted when closed, unrolls as it blooms, and flares on surge
-      const unrollRot = (1 - easeOpen) * twistAngles[wIdx] * rose.spinDir
-        + overOpen * (wIdx % 2 === 0 ? 0.22 : -0.20) * rose.spinDir;
-
-      // Subtle perspective shift outward when blooming strongly
-      const shiftFactor = (easeOpen - 0.5) * 2 * overOpen * 4.5 * baseScale;
-
-      bCtx.save();
-      bCtx.translate(rose.tiltX * shiftFactor, rose.tiltY * shiftFactor);
-      bCtx.rotate(unrollRot);
-      bCtx.scale(whorlScale, whorlScale);
-      bCtx.drawImage(
-        wCanvas,
-        -drawSize * 0.5,
-        -drawSize * 0.5,
-        drawSize,
-        drawSize
-      );
-      bCtx.restore();
-    }
+    bCtx.globalAlpha = 1;
 
     // 4C. Warm Subsurface Sunlit Bloom Glow when the rose surges open ("Nở rộ rực rỡ")
     const activeGlow = Math.max(rose.flareGlow, Math.max(0, (rose.bloom - 1.05) * 2.2));
