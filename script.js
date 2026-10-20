@@ -711,8 +711,8 @@ function drawWrappingPaperBack(ctx, cx, cy, scale) {
 
   // 5. Deep Botanical Shadow Bed inside the paper cone so roses sit deeply nestled
   const bedGrad = ctx.createRadialGradient(0, -35, 30, 0, -35, 195);
-  bedGrad.addColorStop(0, '#2B3A30');
-  bedGrad.addColorStop(0.65, '#3E2832');
+  bedGrad.addColorStop(0, '#6b7f6a');
+  bedGrad.addColorStop(0.65, '#8a7a82');
   bedGrad.addColorStop(1, 'rgba(74, 44, 53, 0)');
   ctx.fillStyle = bedGrad;
   ctx.beginPath();
